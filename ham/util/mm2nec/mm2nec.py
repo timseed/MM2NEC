@@ -69,10 +69,11 @@ class mm2nec:
         """
         self.mm_str = mm_str
         self._section()
+        return self.convert_wire("\n".join(self._parts['Wires']))
 
     def nec_tuple_to_str(self, nt) -> str:
         if isinstance(nt,nec_line):
-            return "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(nt.wire,
+            return "{}\t{:3d}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(nt.wire,
             nt.line_no,
             nt.seg,
             nt.sx,
@@ -86,7 +87,7 @@ class mm2nec:
             self.LOGGER.error(f"Not type nec_line")
             return None
 
-    def convert_wire(self, mm_str: str) -> str:
+    def convert_wire(self, mm_str: str, segments: int = 21) -> str:
         """
         Convert the Wire
 
@@ -119,7 +120,10 @@ class mm2nec:
         # Miss the count
         for line in mm_str.split("\n")[1:]:
             l = mm_line(*[float(field.strip()) for field in line.split(",")])
-            nl = nec_line('Wire',cnt, l.seg, l.sx, l.sy, l.sz, l.ex, l.ey, l.ez, l.thickness)
+            if l.seg == -1.0:
+                nl = nec_line('Wire',cnt, segments, l.sx, l.sy, l.sz, l.ex, l.ey, l.ez, l.thickness)
+            else:
+                nl = nec_line('Wire', cnt, l.seg, l.sx, l.sy, l.sz, l.ex, l.ey, l.ez, l.thickness)
             self.LOGGER.debug(f"l is {l}")
             self.LOGGER.debug(f"nl is {nl}")
             cnt+=1
